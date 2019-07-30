@@ -1,61 +1,11 @@
 import numpy as np
 import torch
-from PIL import Image
+import argparse
+import json
+from PIL import Image, ImageDraw
 
+from identification.dataloader import Normalizer, Resizer
 from torchvision import transforms
-
-
-class Resizer(object):
-    """Convert ndarrays in sample to Tensors."""
-
-    def __call__(self, sample, min_side=800, max_side=1400):
-        image, annots, scale = sample['img'], sample['annot'], sample['scale']
-
-        rows, cols = image.size
-
-        # scale = min_side / rows
-
-        smallest_side = min(rows, cols)
-
-        # rescale the image so the smallest side is min_side
-        scale = min_side / smallest_side
-
-        # check if the largest side is now greater than max_side, which can happen
-        # when images have a large aspect ratio
-        largest_side = max(rows, cols)
-
-        if largest_side * scale > max_side:
-            scale = max_side / largest_side
-
-        # resize the image with the computed scale
-        image = np.array(image.resize((int(round((cols * scale))), int(round((rows * scale)))), resample=Image.BILINEAR))
-        image = image  / 255.0
-
-        rows, cols, cns = image.shape
-
-        pad_w = 32 - rows % 32
-        pad_h = 32 - cols % 32
-
-        new_image = np.zeros((rows + pad_w, cols + pad_h, cns)).astype(np.float32)
-        new_image[:rows, :cols, :] = image.astype(np.float32)
-
-        annots[:, :4] *= scale
-
-        return {'img': new_image, 'annot': annots, 'scale': scale}
-
-
-class Normalizer(object):
-    def __init__(self):
-        self.mean = np.array([[[0.485, 0.456, 0.406]]])
-        self.std = np.array([[[0.229, 0.224, 0.225]]])
-
-    def __call__(self, sample):
-        image, annots, scales = sample['img'], sample['annot'], sample['scale']
-
-        image = (image.astype(np.float32) - self.mean) / self.std
-
-        sample = {'img': torch.from_numpy(image), 'annot': torch.from_numpy(annots), 'scale': scales}
-        return sample
 
 
 def fan_detect(model, img_data, threshold=0.9, max_detections=100, is_cuda=True):
@@ -70,7 +20,7 @@ def fan_detect(model, img_data, threshold=0.9, max_detections=100, is_cuda=True)
             img_data = img_data.cuda()
         scores, labels, boxes = model(img_data)
         if scores is None:
-            return np.array()
+            return np.empty((0,0)), np.empty((0,0))
 
         scores = scores.cpu().numpy()
         scale = transformed['scale']
@@ -81,7 +31,16 @@ def fan_detect(model, img_data, threshold=0.9, max_detections=100, is_cuda=True)
         scores_sort = np.argsort(-scores)[:max_detections]
         image_boxes = boxes[indices[scores_sort], :]
 
-    return image_boxes
+    return image_boxes, scores[:max_detections]
+
+
+def img_rectangles(img, output_path, boxes=None):
+    if boxes is not None:
+        draw = ImageDraw.Draw(img)
+        for arr in boxes:
+            draw.rectangle(((arr[0], arr[1]), (arr[2], arr[3])), outline="black", width=1)
+
+    img.save(output_path)
 
 
 def load_model(model_path, is_cuda=True):
@@ -93,3 +52,36 @@ def load_model(model_path, is_cuda=True):
     model.anchors.is_cuda=is_cuda
 
     return model
+
+
+def load_image(filepath):
+    img = Image.open(filepath)
+    img = img.convert(mode="RGB")
+    return img
+
+
+def main(args=None):
+    parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
+
+    parser.add_argument('--model', help='Path to model')
+    parser.add_argument('--image', help='Path to image')
+    parser.add_argument('--rect', help='Output image with rectangles')
+    parser.add_argument('--threshold', help='Probability threshold (default 0.9)', type=float, default=0.9)
+    parser.add_argument('--force-cpu', help='Force CPU for detection (default false)', dest='force_cpu',
+                        default=False, action='store_true')
+
+    parser = parser.parse_args(args)
+
+    is_cuda = torch.cuda.is_available() and not parser.force_cpu
+
+    model = load_model(parser.model, is_cuda=is_cuda)
+    img = load_image(parser.image)
+    boxes, scores = fan_detect(model, img, threshold=parser.threshold, is_cuda=is_cuda)
+    print(json.dumps({'boxes': boxes.tolist(), 'scores': scores}))
+    if parser.rect:
+        img = load_image(parser.image)
+        img_rectangles(img, parser.rect, boxes)
+
+
+if __name__ == '__main__':
+    main()

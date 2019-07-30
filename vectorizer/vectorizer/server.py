@@ -13,6 +13,7 @@ from PIL import Image
 import identification.detector as fan
 
 is_cuda = torch.cuda.is_available()
+print('CUDA: %s' % is_cuda)
 fan_model = fan.load_model('ckpt/wider6_10.pt', is_cuda=is_cuda)
 
 # load recognition model
@@ -61,18 +62,25 @@ def upload_file():
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             f.save(filepath)
 
-            img = Image.open(filepath)
-            data = img.convert(mode="RGB")
+            try:
+                img = Image.open(filepath)
+                data = img.convert(mode="RGB")
 
-            with torch.no_grad():
-                boxes = fan.fan_detect(fan_model, data, threshold=0.9, is_cuda=is_cuda).astype(int)
-                boxes = [b for b in boxes if abs(b[1] - b[0]) >= imagesize / 2 and abs(b[2] - b[0]) >= imagesize / 2]
+                with torch.no_grad():
+                    boxes, scores = fan.fan_detect(fan_model, data, threshold=0.9, is_cuda=is_cuda)
 
-                if boxes is None or len(boxes) == 0:
-                    abort(404)
+                    if boxes is None or len(boxes) == 0:
+                        return jsonify([])
 
-                extracted = [{'box': arr.tolist(), 'vector': compute_vector(img.crop((arr[0], arr[1], arr[2], arr[3]))).squeeze().tolist()} for arr in boxes]
-                return jsonify(extracted)
+                    boxes = boxes.astype(int)
+                    scores = scores.astype(float)
+                    extracted = [{'box': arr.tolist(),
+                                  'vector': compute_vector(img.crop((arr[0], arr[1], arr[2], arr[3]))).squeeze().tolist(),
+                                  'scores': score.tolist()
+                                  } for arr, score in zip(boxes, scores)]
+                    return jsonify(extracted)
+            finally:
+                os.remove(filepath)
         else:
             abort(500)
 
