@@ -76,7 +76,7 @@ def upload_file():
                     scores = scores.astype(float)
                     extracted = [{'box': arr.tolist(),
                                   'vector': compute_vector(img.crop((arr[0], arr[1], arr[2], arr[3]))).squeeze().tolist(),
-                                  'scores': score.tolist()
+                                  'score': score
                                   } for arr, score in zip(boxes, scores)]
                     return jsonify(extracted)
             finally:
