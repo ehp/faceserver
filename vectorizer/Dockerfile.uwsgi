@@ -1,0 +1,19 @@
+FROM tiangolo/uwsgi-nginx-flask:python3.7
+
+ENV UWSGI_CHEAPER 1
+ENV UWSGI_PROCESSES 2
+ENV NGINX_MAX_UPLOAD 20m
+ENV LISTEN_PORT 8080
+ENV UWSGI_INI /app/uwsgi.ini
+
+EXPOSE 8080
+WORKDIR /app
+
+COPY ./requirements.txt /tmp/requirements.txt
+RUN pip install --upgrade -r /tmp/requirements.txt
+
+COPY ./ckpt /app/ckpt
+COPY ./identification /app/identification
+COPY ./recognition /app/recognition
+COPY ./vectorizer /app/vectorizer
+COPY ./uwsgi.ini /app/uwsgi.ini
