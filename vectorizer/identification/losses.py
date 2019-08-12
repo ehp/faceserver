@@ -1,3 +1,22 @@
+# -*- coding: utf-8 -*-
+"""
+   Copyright 2019 Petr Masopust, Aprar s.r.o.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+   Adopted code from https://github.com/rainofmine/Face_Attention_Network
+"""
+
 import math
 import torch
 import torch.nn as nn
@@ -7,6 +26,7 @@ import torch.nn.functional as F
 def memprint(a):
     print(a.shape)
     print(a.element_size() * a.nelement())
+
 
 def calc_iou(a, b):
     step = 20
@@ -18,11 +38,11 @@ def calc_iou(a, b):
     area = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
 
     for i in range(step_count):
-        iw = torch.min(torch.unsqueeze(a[:, 2], dim=1), b[i * step:(i+1) * step, 2])
-        iw.sub_(torch.max(torch.unsqueeze(a[:, 0], 1), b[i * step:(i+1) * step, 0]))
+        iw = torch.min(torch.unsqueeze(a[:, 2], dim=1), b[i * step:(i + 1) * step, 2])
+        iw.sub_(torch.max(torch.unsqueeze(a[:, 0], 1), b[i * step:(i + 1) * step, 0]))
 
-        ih = torch.min(torch.unsqueeze(a[:, 3], dim=1), b[i * step:(i+1) * step, 3])
-        ih.sub_(torch.max(torch.unsqueeze(a[:, 1], 1), b[i * step:(i+1) * step, 1]))
+        ih = torch.min(torch.unsqueeze(a[:, 3], dim=1), b[i * step:(i + 1) * step, 3])
+        ih.sub_(torch.max(torch.unsqueeze(a[:, 1], 1), b[i * step:(i + 1) * step, 1]))
 
         iw.clamp_(min=0)
         ih.clamp_(min=0)
@@ -30,12 +50,12 @@ def calc_iou(a, b):
         iw.mul_(ih)
         del ih
 
-        ua = torch.unsqueeze((a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1]), dim=1) + area[i * step:(i+1) * step] - iw
+        ua = torch.unsqueeze((a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1]), dim=1) + area[i * step:(i + 1) * step] - iw
         ua = torch.clamp(ua, min=1e-8)
         iw.div_(ua)
         del ua
 
-        IoU[:, i * step:(i+1) * step] = iw
+        IoU[:, i * step:(i + 1) * step] = iw
 
     return IoU
 
@@ -131,7 +151,7 @@ class FocalLoss(nn.Module):
                 alpha_factor = torch.ones(targets.shape)
                 if self.is_cuda:
                     alpha_factor = alpha_factor.cuda()
-                alpha_factor *=  alpha
+                alpha_factor *= alpha
             except:
                 print(targets)
                 print(targets.shape)

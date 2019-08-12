@@ -1,8 +1,8 @@
 # Runtime directories
-ckpt/
 mAP_txt/
 summary/
 weight/
+files/
 
 # IntelliJ IDEA
 .idea/
@@ -12,6 +12,7 @@ weight/
 __pycache__/
 *.py[cod]
 *$py.class
+main
 
 # C extensions
 *.so

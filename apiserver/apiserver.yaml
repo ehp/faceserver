@@ -1,8 +1,6 @@
-port: 8081
-vectorizer:
-  url: http://localhost:8080/vectorize
-db:
-  user: faceserver
-  password: aaa
-  name: faceserver
-  host: localhost
+port: 8080
+vectorizer: http://vectorizer:8080/vectorize
+dbuser: faceserver
+dbpassword: secret
+dbname: faceserver
+dbhost: db

@@ -1,21 +1,36 @@
 # -*- coding: utf-8 -*-
 """
-Created on 18-5-30 下午4:55
+   Copyright 2019 Petr Masopust, Aprar s.r.o.
 
-@author: ronghuaiyang
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+   Adopted code from https://github.com/ronghuaiyang/arcface-pytorch
+
+   Created on 18-5-30 下午4:55
+
+   @author: ronghuaiyang
 """
 import os
 import argparse
 
 from torch.utils.data import TensorDataset, DataLoader
 
-from recognition.nets import resnet18, resnet34, resnet50, resnet101, resnet152, sphere20
+from recognition.nets import get_net_by_depth
 import torch
 import numpy as np
 from torch.nn import DataParallel
 from PIL import Image
 from torchvision import transforms as T
-
 
 imagesize = 224
 batch_size = 20
@@ -120,7 +135,8 @@ def cal_accuracy(y_score, y_true):
 def main(args=None):
     parser = argparse.ArgumentParser(description='Testing script for face identification.')
 
-    parser.add_argument('--depth', help='Resnet depth, must be one of 18, 34, 50, 101, 152 or 20 for sphere', type=int, default=50)
+    parser.add_argument('--depth', help='Resnet depth, must be one of 18, 34, 50, 101, 152 or 20 for sphere', type=int,
+                        default=50)
     parser.add_argument('--parallel', help='Run training with DataParallel', dest='parallel',
                         default=False, action='store_true')
     parser.add_argument('--model', help='Path to model')
@@ -133,20 +149,7 @@ def main(args=None):
     is_cuda = torch.cuda.is_available()
     print('CUDA available: {}'.format(is_cuda))
 
-    if parser.depth == 18:
-        model = resnet18()
-    elif parser.depth == 20:
-        model = sphere20()
-    elif parser.depth == 34:
-        model = resnet34()
-    elif parser.depth == 50:
-        model = resnet50()
-    elif parser.depth == 101:
-        model = resnet101()
-    elif parser.depth == 152:
-        model = resnet152()
-    else:
-        raise ValueError('Unsupported model depth, must be one of 18, 34, 50, 101, 152')
+    model = get_net_by_depth(parser.depth)
 
     if parser.parallel:
         model = DataParallel(model)

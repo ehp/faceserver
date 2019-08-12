@@ -1,3 +1,22 @@
+# -*- coding: utf-8 -*-
+"""
+   Copyright 2019 Petr Masopust, Aprar s.r.o.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+   Adopted code from https://github.com/rainofmine/Face_Attention_Network
+"""
+
 import argparse
 import collections
 import os
@@ -12,7 +31,8 @@ import torch.utils.model_zoo as model_zoo
 from identification.model_level_attention import resnet18, resnet34, resnet50, resnet101, resnet152
 from torch.utils.data import DataLoader
 from identification.csv_eval import evaluate
-from identification.dataloader import WIDERDataset, AspectRatioBasedSampler, collater, Resizer, Augmenter, Normalizer, CSVDataset
+from identification.dataloader import WIDERDataset, AspectRatioBasedSampler, collater, Resizer, Augmenter, Normalizer, \
+    CSVDataset
 
 is_cuda = torch.cuda.is_available()
 print('CUDA available: {}'.format(is_cuda))
@@ -26,6 +46,7 @@ model_urls = {
 }
 
 ckpt = False
+
 
 def main(args=None):
     parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
@@ -154,9 +175,11 @@ def main(args=None):
                 img_data = img_data.cuda()
                 annot_data = annot_data.cuda()
 
-            print("GPU memory allocated: %d max memory allocated: %d memory cached: %d max memory cached: %d" % (torch.cuda.memory_allocated() / 1024**2, torch.cuda.max_memory_allocated() / 1024**2, torch.cuda.memory_cached() / 1024**2, torch.cuda.max_memory_cached() / 1024**2))
+            print("GPU memory allocated: %d max memory allocated: %d memory cached: %d max memory cached: %d" % (
+            torch.cuda.memory_allocated() / 1024 ** 2, torch.cuda.max_memory_allocated() / 1024 ** 2,
+            torch.cuda.memory_cached() / 1024 ** 2, torch.cuda.max_memory_cached() / 1024 ** 2))
             classification_loss, regression_loss, mask_loss = retinanet([img_data, annot_data])
-            
+
             del img_data
             del annot_data
 
@@ -195,7 +218,7 @@ def main(args=None):
 
         scheduler.step(np.mean(epoch_loss))
 
-        #TODO remove makedir
+        # TODO remove makedir
         os.makedirs('./ckpt', exist_ok=True)
         if parser.parallel:
             torch.save(retinanet.module, './ckpt/' + parser.model_name + '_{}.pt'.format(epoch_num))

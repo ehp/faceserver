@@ -1,0 +1,26 @@
+version: "3.7"
+services:
+  apiserver:
+    build:
+      context: ./apiserver
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - vectorizer
+  vectorizer:
+    build:
+      context: ./vectorizer
+    environment:
+      VS_PORT: 8080
+      VS_FAN_MODEL: "./ckpt/wider6_10.pt"
+      VS_REC_DEPTH: 50
+      VS_REC_MODEL: "./ckpt/recongition3_37.pt"
+  db:
+    image: postgres:11-alpine
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: faceserver
+      POSTGRES_DB: faceserver
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql

@@ -1,4 +1,21 @@
 # -*- coding: utf-8 -*-
+"""
+   Copyright 2019 Petr Masopust, Aprar s.r.o.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+   Adopted code from https://github.com/ronghuaiyang/arcface-pytorch
+"""
 
 import math
 
@@ -32,18 +49,18 @@ class AdaCos(nn.Module):
             self.criterion = self.criterion.cuda()
 
     def forward(self, input, label):
-# changed to fixed adacos
-#        theta = torch.acos(torch.clamp(input, -1.0 + 1e-7, 1.0 - 1e-7))
-#        one_hot = torch.zeros_like(input)
-#        one_hot.scatter_(1, label.view(-1, 1).long(), 1)
-#        with torch.no_grad():
-#            B_avg = torch.where(one_hot < 1, torch.exp(self.s * input), torch.zeros_like(input))
-#            B_avg = torch.sum(B_avg) / input.size(0)
-#            theta_med = torch.median(theta)
-#            self.s = torch.log(B_avg) / torch.cos(torch.min(math.pi/4 * torch.ones_like(theta_med), theta_med))
-#            # TODO why converge to infinity ?
-#            self.s = torch.clamp(self.s, self.base_s / 2, self.base_s * 2)
-#            print(self.s)
+        # changed to fixed adacos - faster and more stable
+        #        theta = torch.acos(torch.clamp(input, -1.0 + 1e-7, 1.0 - 1e-7))
+        #        one_hot = torch.zeros_like(input)
+        #        one_hot.scatter_(1, label.view(-1, 1).long(), 1)
+        #        with torch.no_grad():
+        #            B_avg = torch.where(one_hot < 1, torch.exp(self.s * input), torch.zeros_like(input))
+        #            B_avg = torch.sum(B_avg) / input.size(0)
+        #            theta_med = torch.median(theta)
+        #            self.s = torch.log(B_avg) / torch.cos(torch.min(math.pi/4 * torch.ones_like(theta_med), theta_med))
+        #            # TODO why converge to infinity ?
+        #            self.s = torch.clamp(self.s, self.base_s / 2, self.base_s * 2)
+        #            print(self.s)
         output = self.s * input
 
         return self.criterion(output, label)
