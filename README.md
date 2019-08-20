@@ -2,6 +2,10 @@
 
 Mass faces identification and recognition in images. 
 
+**You must have git lfs installed before cloning this repo !**
+
+Because of github stupid git lfs pricing there is also [alternative mirror](https://gitea.ehp.cz/Aprar/faceserver) with copy of this repository. 
+
 ## Installation
 
 The simplest complete installation is docker compose: ``docker-compose up -d`` in root directory. For detailed installation instructions look at [API server](apiserver/README.md) or [vectorizer](vectorizer/README.md) readme files.
@@ -66,6 +70,19 @@ Only API server listen to customer requests, the rest are internal components an
  * Training on identified faces (both nets are trained separately now)
  * Face alignment between identification and recognition
  * Web user interface (help needed !)
+
+## FAQ
+
+* Unable to connect to vectorizer or _pickle.UnpicklingError: invalid load key, 'v'.  
+Missing model data - probably cloned repository without git lfs.
+To download and use pretrained models in already cloned repository:
+```shell script
+git lfs install
+git lfs checkout
+git lfs fetch
+
+docker-compose build
+``` 
 
 ## Based on
 
