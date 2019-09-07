@@ -74,21 +74,43 @@ def sphere20():
     return sphere20a()
 
 
-def get_net_by_depth(depth):
-    if depth == 18:
+def resnext50(pretrained=False, **kwargs):
+    """Constructs a ResNext-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = models.resnext50_32x4d(num_classes=512, **kwargs)
+    return model
+
+
+def resnext101(pretrained=False, **kwargs):
+    """Constructs a ResNext-101 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = models.resnext101_32x8d(num_classes=512, **kwargs)
+    return model
+
+
+def get_net_by_name(name):
+    if name == 'resnet18':
         model = resnet18()
-    elif depth == 20:
+    elif name == 'spherenet':
         model = sphere20()
-    elif depth == 34:
+    elif name == 'resnet34':
         model = resnet34()
-    elif depth == 50:
+    elif name == 'resnet50':
         model = resnet50()
-    elif depth == 101:
+    elif name == 'resnet101':
         model = resnet101()
-    elif depth == 152:
+    elif name == 'resnet152':
         model = resnet152()
+    elif name == 'resnext50':
+        model = resnext50()
+    elif name == 'resnext101':
+        model = resnext101()
     else:
-        raise ValueError('Unsupported model depth %d, must be one of 18, 34, 50, 101, 152' % depth)
+        raise ValueError('Unsupported model %s, must be one of resnet18, resnet34, resnet50, resnet101, resnet152, spherenet, resnext50, resnext101' % name)
 
     return model
 

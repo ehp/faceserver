@@ -30,7 +30,7 @@ from torchvision import transforms as T
 
 from recognition.angle import AngleLinear, CosFace, SphereFace, ArcFace, AdaCos
 from recognition.focal_loss import FocalLoss
-from recognition.nets import get_net_by_depth
+from recognition.nets import get_net_by_name
 from recognition.test import lfw_test2, get_pair_list, load_img_data
 
 
@@ -81,8 +81,8 @@ def main(args=None):
 
     parser.add_argument('--print_freq', help='Print every N batch (default 100)', type=int, default=100)
     parser.add_argument('--epochs', help='Number of epochs', type=int, default=50)
-    parser.add_argument('--depth', help='Resnet depth, must be one of 18, 34, 50, 101, 152 or 20 for sphere', type=int,
-                        default=50)
+    parser.add_argument('--net', help='Net name, must be one of resnet18, resnet34, resnet50, resnet101, resnet152, resnext50, resnext101 or spherenet',
+                        default='resnet50')
     parser.add_argument('--lr_step', help='Learning rate step (default 10)', type=int, default=10)
     parser.add_argument('--lr', help='Learning rate (default 0.1)', type=float, default=0.1)
     parser.add_argument('--weight_decay', help='Weight decay (default 0.0005)', type=float, default=0.0005)
@@ -108,7 +108,7 @@ def main(args=None):
     print('CUDA available: {}'.format(is_cuda))
 
     imagesize = 224
-    model = get_net_by_depth(parser.depth)
+    model = get_net_by_name(parser.net)
 
     # TODO split training dataset to train/validation and stop using test dataset for acc
     train_dataset = Dataset(parser.casia_root, parser.casia_list, imagesize)
@@ -172,8 +172,6 @@ def main(args=None):
     start = time.time()
     last_acc = 0.0
     for i in range(parser.epochs):
-        scheduler.step()
-
         model.train()
         for ii, data in enumerate(trainloader):
             data_input, label = data
@@ -196,6 +194,7 @@ def main(args=None):
 
                 start = time.time()
 
+        scheduler.step()
         model.eval()
         acc = lfw_test2(model, identity_list, img_data, is_cuda=is_cuda)
         print('Accuracy: %f' % acc)

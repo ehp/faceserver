@@ -24,7 +24,7 @@ from flask import Flask, request, abort, jsonify
 from werkzeug.utils import secure_filename
 
 import torch
-from recognition.nets import get_net_by_depth
+from recognition.nets import get_net_by_name
 from torchvision import transforms as T
 from PIL import Image
 import identification.detector as fan
@@ -38,7 +38,7 @@ if fan_file is None:
 fan_model = fan.load_model(fan_file, is_cuda=is_cuda)
 
 # load recognition model
-rec_model = get_net_by_depth(int(os.environ.get('VS_REC_DEPTH', 50)))
+rec_model = get_net_by_name(os.environ.get('VS_REC_NET', 'resnet50'))
 rec_file = os.environ.get('VS_REC_MODEL', None)
 if rec_file is None:
     raise Exception('VS_REC_MODEL is mandatory parameter')

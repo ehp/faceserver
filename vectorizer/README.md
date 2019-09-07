@@ -16,7 +16,7 @@ Set environment variables:
 | --- | --- | --- |
 | VS_PORT | 8080 | Port to listen (for Flask) |
 | VS_FAN_MODEL |  | Path to identification model |
-| VS_REC_DEPTH | 50 | Recognition net depth |
+| VS_REC_NET | resnet50 | Recognition net name |
 | VS_REC_MODEL |  | Path to recognition model |
 
 Do not change configuration if you want run prepared docker-compose.
@@ -112,7 +112,7 @@ python3 -m recognition.train \
 --lfw_root ~/datasets/lfw \
 --lfw_pair_list lfw_test_pair.txt \
 --model_name recongition1 --batch_size 20 \
---loss adacos --print_freq 20 --depth 50
+--loss adacos --print_freq 20 --net resnet50
 ```
 
 | Argument | Description | Required / Default value |
@@ -121,7 +121,7 @@ python3 -m recognition.train \
 | --casia_root | Path to CASIA images | Yes |
 | --lfw_root | Path to LFW dataset | Yes |
 | --lfw_pair_list | Path to LFW pair list file (lfw_test_pair.txt - in this repository) | Yes |
-| --depth | Resnet depth, must be one of 18, 34, 50, 101, 152 or 20 for sphere net | 50 |
+| --net | Net name, must be one of resnet18, resnet34, resnet50, resnet101, resnet152, resnext50, resnext101 or spherenet | resnet50 |
 | --epochs | Number of epochs | 50 |
 | --batch_size | Batch size | 16 |
 | --model_name | Model name prefix | Yes |

@@ -25,7 +25,7 @@ import argparse
 
 from torch.utils.data import TensorDataset, DataLoader
 
-from recognition.nets import get_net_by_depth
+from recognition.nets import get_net_by_name
 import torch
 import numpy as np
 from torch.nn import DataParallel
@@ -135,8 +135,8 @@ def cal_accuracy(y_score, y_true):
 def main(args=None):
     parser = argparse.ArgumentParser(description='Testing script for face identification.')
 
-    parser.add_argument('--depth', help='Resnet depth, must be one of 18, 34, 50, 101, 152 or 20 for sphere', type=int,
-                        default=50)
+    parser.add_argument('--net', help='Net name, must be one of resnet18, resnet34, resnet50 (default), resnet101, resnet152, resnext50, resnext101 or spherenet',
+                        default='resnet50')
     parser.add_argument('--parallel', help='Run training with DataParallel', dest='parallel',
                         default=False, action='store_true')
     parser.add_argument('--model', help='Path to model')
@@ -149,7 +149,7 @@ def main(args=None):
     is_cuda = torch.cuda.is_available()
     print('CUDA available: {}'.format(is_cuda))
 
-    model = get_net_by_depth(parser.depth)
+    model = get_net_by_name(parser.net)
 
     if parser.parallel:
         model = DataParallel(model)
