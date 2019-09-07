@@ -23,14 +23,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def memprint(a):
-    print(a.shape)
-    print(a.element_size() * a.nelement())
-
-
-def calc_iou(a, b):
+def calc_iou(a, b, is_cuda=False):
     step = 20
-    IoU = torch.zeros((len(a), len(b))).cuda()
+    IoU = torch.zeros((len(a), len(b)))
+    if is_cuda:
+        IoU = IoU.cuda()
     step_count = int(len(b) / step)
     if len(b) % step != 0:
         step_count += 1
@@ -127,7 +124,7 @@ class FocalLoss(nn.Module):
 
             classification = torch.clamp(classification, 1e-4, 1.0 - 1e-4)
 
-            IoU = calc_iou(anchor, bbox_annotation[:, :4])  # num_anchors x num_annotations
+            IoU = calc_iou(anchor, bbox_annotation[:, :4], self.is_cuda)  # num_anchors x num_annotations
 
             IoU_max, IoU_argmax = torch.max(IoU, dim=1)  # num_anchors x 1
 

@@ -32,7 +32,7 @@ from identification.model_level_attention import resnet18, resnet34, resnet50, r
 from torch.utils.data import DataLoader
 from identification.csv_eval import evaluate
 from identification.dataloader import WIDERDataset, AspectRatioBasedSampler, collater, Resizer, Augmenter, Normalizer, \
-    CSVDataset
+    CSVDataset, RandomEraser
 
 is_cuda = torch.cuda.is_available()
 print('CUDA available: {}'.format(is_cuda))
@@ -75,10 +75,10 @@ def main(args=None):
     # Create the data loaders
     if parser.wider_train is None:
         dataset_train = CSVDataset(train_file=parser.csv_train, class_list=parser.csv_classes,
-                                   transform=transforms.Compose([Resizer(), Augmenter(), Normalizer()]))
+                                   transform=transforms.Compose([Resizer(), Augmenter(), Normalizer(), RandomEraser()]))
     else:
         dataset_train = WIDERDataset(train_file=parser.wider_train, img_prefix=parser.wider_train_prefix,
-                                     transform=transforms.Compose([Resizer(), Augmenter(), Normalizer()]))
+                                     transform=transforms.Compose([Resizer(), Augmenter(), Normalizer(), RandomEraser()]))
 
     if parser.wider_val is None:
         if parser.csv_val is None:
@@ -175,9 +175,10 @@ def main(args=None):
                 img_data = img_data.cuda()
                 annot_data = annot_data.cuda()
 
-            print("GPU memory allocated: %d max memory allocated: %d memory cached: %d max memory cached: %d" % (
-            torch.cuda.memory_allocated() / 1024 ** 2, torch.cuda.max_memory_allocated() / 1024 ** 2,
-            torch.cuda.memory_cached() / 1024 ** 2, torch.cuda.max_memory_cached() / 1024 ** 2))
+                print("GPU memory allocated: %d max memory allocated: %d memory cached: %d max memory cached: %d" % (
+                torch.cuda.memory_allocated() / 1024 ** 2, torch.cuda.max_memory_allocated() / 1024 ** 2,
+                torch.cuda.memory_cached() / 1024 ** 2, torch.cuda.max_memory_cached() / 1024 ** 2))
+
             classification_loss, regression_loss, mask_loss = retinanet([img_data, annot_data])
 
             del img_data

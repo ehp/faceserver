@@ -27,6 +27,7 @@ from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 
 from PIL import Image, ImageEnhance, ImageFilter
+from torchvision import transforms as T
 
 
 class CSVDataset(Dataset):
@@ -400,6 +401,19 @@ class Resizer(object):
         annots[:, :4] *= scale
 
         return {'img': new_image, 'annot': annots, 'scale': scale}
+
+
+class RandomEraser(object):
+    def __init__(self):
+        self.eraser = T.RandomErasing()
+
+    def __call__(self, sample):
+        image, annots, scales = sample['img'], sample['annot'], sample['scale']
+
+        image = self.eraser(image)
+
+        sample = {'img': image, 'annot': annots, 'scale': scales}
+        return sample
 
 
 class Augmenter(object):

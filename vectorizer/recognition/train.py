@@ -50,7 +50,8 @@ class Dataset(torch.utils.data.Dataset):
             T.RandomResizedCrop(imagesize),
             T.RandomHorizontalFlip(),
             T.ToTensor(),
-            normalize
+            normalize,
+            T.RandomErasing()
         ])
 
     def __getitem__(self, index):

@@ -154,6 +154,7 @@ Papers:
 * [ArcFace: Additive Angular Margin Loss for Deep Face Recognition](https://arxiv.org/abs/1801.07698)
 * [SphereFace: Deep Hypersphere Embedding for Face Recognition](https://arxiv.org/abs/1704.08063)
 * [CosFace: Large Margin Cosine Loss for Deep Face Recognition](https://arxiv.org/abs/1801.09414)
+* [Random Erasing Data Augmentation](https://arxiv.org/abs/1708.04896)
 
 ## Licensing
 
