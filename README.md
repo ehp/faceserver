@@ -1,5 +1,11 @@
 # Face recognition technology demo
 
+## EU AI Act
+
+Because [EU AI Act](https://artificialintelligenceact.eu/the-act/) I have to delete learned files. EU simply killed AI research like many others before because its over-regulation.
+
+## Original preface
+
 Mass faces identification and recognition in images. 
 
 **You must have git lfs installed before cloning this repo !**
